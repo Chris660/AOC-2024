@@ -44,51 +44,61 @@ procedure Main is
         end return;
     end Get;
 
-    function Problem_Count (Levels : in Report) return Natural is
+    function Is_Safe (Levels : in Report) return Boolean is
         Diff      : Integer;
         Last_Diff : Integer := 0;
-        Count     : Natural := 0;
     begin
         for I in Levels'First .. Levels'Last - 1 loop
             Diff := Levels(I + 1) - Levels(I);
 
             if abs(Diff) < 1 or else abs(Diff) > 3 then
-                Count := @ + 1;
-            elsif Last_Diff /= 0 then
+                return False;
+            end if;
+
+            if Last_Diff /= 0 then
                 if Last_Diff * Diff < 0 then
                     -- Differing signs
-                    Count := @ + 1;
+                    return False;
                 end if;
             end if;
             Last_Diff := Diff;
         end loop;
 
-        return Count;
-    end Problem_Count;
+        return True;
+    end Is_Safe;
 
-    function Is_Safe (Levels : in Report; Safe_Limit : Natural := 0) return Boolean is
-        (Problem_Count (Levels) <= Safe_Limit);
+    -- Part 2: allow *one* problematic level.
+    function Is_Safe_Dampened (Levels : in Report) return Boolean is
+    begin
+        -- Try excluding each element in Levels in turn.
+        for I in Levels'Range loop
+            if Is_Safe (Levels (Levels'First .. I - 1) & Levels(I + 1 .. Levels'Last)) then
+                return True;
+            end if;
+        end loop;
+        return False;
+    end Is_Safe_Dampened;
 
-    Part_1_Count : Natural := 0;
-    Part_2_Count : Natural := 0;
+    Safe_Count_1 : Natural := 0;
+    Safe_Count_2 : Natural := 0; -- part 2
 
 begin
-    -- Part 1 - count safe levels
     while not End_Of_File loop
         declare
             Levels : constant Report := Get;
         begin
-            -- Put (Levels'Image);
+            -- Part 1 - only reports with no problems are safe.
             if Is_Safe (Levels) then
-                Part_1_Count := @ + 1;
-            end if;
+                Safe_Count_1 := @ + 1;
+                Safe_Count_2 := @ + 1;
 
-            if Is_Safe (Levels, 1) then
-                Part_2_Count := @ + 1;
+            -- Part 2 - allow one erroneous level per report.
+            elsif Is_Safe_Dampened (Levels) then
+                Safe_Count_2 := @ + 1;
             end if;
         end;
     end loop;
     New_Line;
-    Put_Line("Part 1: safe count : " & Part_1_Count'Image);
-    Put_Line("Part 2: safe count : " & Part_2_Count'Image);
+    Put_Line("Safe Count 1: " & Safe_Count_1'Image);
+    Put_Line("Safe Count 2: " & Safe_Count_2'Image);
 end Main;
