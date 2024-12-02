@@ -51,7 +51,7 @@ procedure Main is
         for I in Levels'First .. Levels'Last - 1 loop
             Diff := Levels(I + 1) - Levels(I);
 
-            if abs(Diff) < 1 or else abs(Diff) > 3 then
+            if abs(Diff) not in 1 .. 3 then
                 return False;
             end if;
 
