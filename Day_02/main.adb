@@ -44,30 +44,33 @@ procedure Main is
         end return;
     end Get;
 
-    function Is_Safe (Levels : in Report) return Boolean is
+    function Problem_Count (Levels : in Report) return Natural is
         Diff      : Integer;
         Last_Diff : Integer := 0;
+        Count     : Natural := 0;
     begin
         for I in Levels'First .. Levels'Last - 1 loop
             Diff := Levels(I + 1) - Levels(I);
 
             if abs(Diff) < 1 or else abs(Diff) > 3 then
-                return False;
-            end if;
-
-            if Last_Diff /= 0 then
+                Count := @ + 1;
+            elsif Last_Diff /= 0 then
                 if Last_Diff * Diff < 0 then
                     -- Differing signs
-                    return False;
+                    Count := @ + 1;
                 end if;
             end if;
             Last_Diff := Diff;
         end loop;
 
-        return True;
-    end Is_Safe;
+        return Count;
+    end Problem_Count;
 
-    Safe_Count : Natural := 0;
+    function Is_Safe (Levels : in Report; Safe_Limit : Natural := 0) return Boolean is
+        (Problem_Count (Levels) <= Safe_Limit);
+
+    Part_1_Count : Natural := 0;
+    Part_2_Count : Natural := 0;
 
 begin
     -- Part 1 - count safe levels
@@ -75,12 +78,17 @@ begin
         declare
             Levels : constant Report := Get;
         begin
+            -- Put (Levels'Image);
             if Is_Safe (Levels) then
-                Safe_Count := @ + 1;
-                -- Put (Levels'Image);
+                Part_1_Count := @ + 1;
+            end if;
+
+            if Is_Safe (Levels, 1) then
+                Part_2_Count := @ + 1;
             end if;
         end;
     end loop;
     New_Line;
-    Put_Line("Safe Count : " & Safe_Count'Image);
+    Put_Line("Part 1: safe count : " & Part_1_Count'Image);
+    Put_Line("Part 2: safe count : " & Part_2_Count'Image);
 end Main;
