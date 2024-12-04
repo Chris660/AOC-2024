@@ -33,8 +33,6 @@ procedure Part1 is
         return Read_Rest (Get_Line);
     end Read_Input;
 
-    type Direction is (N, NE, E, SE, S, SW, W, NW);
-
     function Count_Words_At (
         Data : in Word_Search;
         Word : in String;
@@ -44,75 +42,52 @@ procedure Part1 is
         Room_E : constant Boolean := X <= Data'Last(2) - 3;
         Room_W : constant Boolean := X > 3;
         Room_S : constant Boolean := Y <= Data'Last(1) - 3;
-        Count : Natural := 0;
+
+        type Directions is (N, NE, E, SE, S, SW, W, NW);
+
+        -- Whether there is room to check in a given direction
+        Room : constant array (Directions) of Boolean := (
+            N  => Room_N,
+            NE => Room_N and Room_E,
+            E  => Room_E,
+            SE => Room_S and Room_E,
+            S  => Room_S,
+            SW => Room_S and Room_W,
+            W  => Room_W,
+            NW => Room_N and Room_W
+        );
+
+        -- Offsets to move in a given direction
+        type Direction_Offset is array (1 .. 2) of Integer range -1 .. 1;
+        Offsets : constant array (Directions) of Direction_Offset := (
+            N  => ( 0, -1),
+            NE => ( 1, -1),
+            E  => ( 1,  0),
+            SE => ( 1,  1),
+            S  => ( 0,  1),
+            SW => (-1,  1),
+            W  => (-1,  0),
+            NW => (-1, -1)
+        );
+
+        X_Factor : Integer := 0;
+        Y_Factor : Integer := 0;
+        Count    : Natural := 0;
     begin
         -- Check the root matches
         if Data (Y, X) = Word (Word'First) then
-            if Room_N then
-                if Data (Y - 1, X) = Word (Word'First + 1) and then
-                   Data (Y - 2, X) = Word (Word'First + 2) and then
-                   Data (Y - 3, X) = Word (Word'First + 3) then
-                    Count := @ + 1;
+            for Dir in Directions loop
+                if Room (Dir) then
+                    X_Factor := Offsets (Dir)(1);
+                    Y_Factor := Offsets (Dir)(2);
+                    if Data (Y + 1 * Y_Factor, X + 1 * X_Factor) = Word (Word'First + 1) and then
+                       Data (Y + 2 * Y_Factor, X + 2 * X_Factor) = Word (Word'First + 2) and then
+                       Data (Y + 3 * Y_Factor, X + 3 * X_Factor) = Word (Word'First + 3) then
+                        Count := @ + 1;
+                    end if;
                 end if;
-            end if;
-
-            if Room_N and then Room_E then
-                if Data (Y - 1, X + 1) = Word (Word'First + 1) and then
-                   Data (Y - 2, X + 2) = Word (Word'First + 2) and then
-                   Data (Y - 3, X + 3) = Word (Word'First + 3) then
-                    Count := @ + 1;
-                end if;
-            end if;
-
-            if Room_E then
-                if Data (Y, X + 1) = Word (Word'First + 1) and then
-                   Data (Y, X + 2) = Word (Word'First + 2) and then
-                   Data (Y, X + 3) = Word (Word'First + 3) then
-                    Count := @ + 1;
-                end if;
-            end if;
-
-            if Room_E and then Room_S then
-                if Data (Y + 1, X + 1) = Word (Word'First + 1) and then
-                   Data (Y + 2, X + 2) = Word (Word'First + 2) and then
-                   Data (Y + 3, X + 3) = Word (Word'First + 3) then
-                    Count := @ + 1;
-                end if;
-            end if;
-
-            if Room_S then
-                if Data (Y + 1, X) = Word (Word'First + 1) and then
-                   Data (Y + 2, X) = Word (Word'First + 2) and then
-                   Data (Y + 3, X) = Word (Word'First + 3) then
-                    Count := @ + 1;
-                end if;
-            end if;
-
-            if Room_S and Room_W then
-                if Data (Y + 1, X - 1) = Word (Word'First + 1) and then
-                   Data (Y + 2, X - 2) = Word (Word'First + 2) and then
-                   Data (Y + 3, X - 3) = Word (Word'First + 3) then
-                    Count := @ + 1;
-                end if;
-            end if;
-
-            if Room_W then
-                if Data (Y, X - 1) = Word (Word'First + 1) and then
-                   Data (Y, X - 2) = Word (Word'First + 2) and then
-                   Data (Y, X - 3) = Word (Word'First + 3) then
-                    Count := @ + 1;
-                end if;
-            end if;
-
-            if Room_W and then Room_N then
-                if Data (Y - 1, X - 1) = Word (Word'First + 1) and then
-                   Data (Y - 2, X - 2) = Word (Word'First + 2) and then
-                   Data (Y - 3, X - 3) = Word (Word'First + 3) then
-                    Count := @ + 1;
-                end if;
-            end if;
+            end loop;
         end if;
-            
         return Count;
     end Count_Words_At;
 
