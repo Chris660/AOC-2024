@@ -1,6 +1,7 @@
 pragma Ada_2022;
 
 with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Containers.Generic_Array_Sort;
 with Ada.Containers.Ordered_Maps;
 with Ada.Containers.Ordered_Sets;
 
@@ -53,7 +54,20 @@ procedure Part1 is
 
     Pages       : Page_Sets.Set;
     Page_Orders : Page_Order_Maps.Map;
+
+    function Before (A, B : in Page_Number) return Boolean is
+    begin
+        return Page_Orders.Contains (A) and then Page_Orders (A).Contains (B);
+    end Before;
+
+    procedure Sort is new Ada.Containers.Generic_Array_Sort
+        (Index_Type   => Positive,
+         Element_Type => Page_Number,
+         Array_Type   => Update_Array,
+         "<"          => Before);
+
     Part1_Total : Natural := 0;
+    Part2_Total : Natural := 0;
 begin
     -- Parse page order rules
     while not End_Of_File loop
@@ -87,10 +101,17 @@ begin
             if Is_Ordered (Cleaned, Page_Orders) then
                 Mid := Update (Update'First + Update'Length / 2);
                 Part1_Total := @ + Natural (Mid);
+            else
+                begin
+                    Sort (Update);
+                    Mid := Update (Update'First + Update'Length / 2);
+                    Part2_Total := @ + Natural (Mid);
+                end;
             end if;
         end;
     end loop;
 
     Put_Line ("Part1 total: " & Part1_Total'Image);
+    Put_Line ("Part2 total: " & Part2_Total'Image);
 end Part1;
 
