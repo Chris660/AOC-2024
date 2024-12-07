@@ -3,7 +3,6 @@ pragma Ada_2022;
 with Ada.Containers;
 with Ada.Containers.Ordered_Sets;
 with Ada.Text_IO;
-with Ada.Unchecked_Conversion;
 
 procedure Part2 is
     use Ada.Text_IO;
@@ -97,6 +96,8 @@ procedure Part2 is
     end Find_Guard;
 
 
+    Loop_Detected : exception;
+
     procedure Patrol (Map   : in Puzzle;
                       Start : in Position;
                       Path  : out Position_Sets.Set) is
@@ -106,6 +107,9 @@ procedure Part2 is
             -- Record the guard's position and direction
             if Map (Guard.Pos.Y, Guard.Pos.X) = '.' then
                 begin
+                    if Path.Contains (Guard) then
+                        raise Loop_Detected;
+                    end if;
                     Path.Insert (Guard);
                 end;
             end if;
@@ -159,9 +163,7 @@ begin
         begin
             Patrol (Map, Guard_Start, Trail);
         exception
-            when Constraint_Error =>
-                -- FIXME: dedicated exception.
-                -- Loop detected.
+            when Loop_Detected =>
                 Loop_Found_Count := @ + 1;
         end;
         Map (Pos.Y, Pos.X) := '.';
